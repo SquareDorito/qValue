@@ -1,0 +1,9 @@
+ID	np	ratio
+ratio.r1	0	0.10
+ratio.r2	0	0.12
+ratio.r3	0	0.097
+ratio.r4	0	0.11
+ratio.r1	1	0.12
+ratio.r2	1	0.099
+ratio.r3	1	0.13
+ratio.r4	1	0.11

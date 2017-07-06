@@ -1,0 +1,3 @@
+id	channel	np	peakArea
+pep32337920_rep5	1	0	63627733
+pep32337920_rep1	2	0	66333569
