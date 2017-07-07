@@ -1,3 +1,5 @@
+library(qvalue)
+
 setwd('C:/Users/knoh1/Documents/qValue_ken/offline')
 
 timepts=4
@@ -31,10 +33,12 @@ for(i in 2:ncol(p_df)){
       
       fileNames<-c(fileNames,tempFileName)
       pVals<-c(pVals,a[['Pr(>F)']][2])
-      qVals<-c(qVals,0)
-      stats_df <- data.frame(fileNames,pVals,qVals)
     }
   }
 }
 
+qobj<-qvalue(p=pVals)
+qvalues <- qobj$qvalues
+qVals<-c(qVals,qvalues)
+stats_df <- data.frame(fileNames,pVals,qVals)
 write.table(stats_df,file="master_stats_df.txt",sep="\t",row.names=FALSE,quote=FALSE)
