@@ -59,9 +59,9 @@ parseFileHelper = function(filePath, waitPath, replicates, timepts, label_free, 
 	}
 	
 	if(identical("C:\\Users\\knoh1\\Documents\\qValue_ken\\phospho_data.xml",filePath)){
-	  write.table(pXML_df,file="phospho_df.txt",sep=",",col.names=colnames(pXML_df),row.names=rownames(pXML_df))
+	  write.table(pXML_df,file="phospho_df.txt",sep=",",col.names=colnames(pXML_df),row.names=rownames(pXML_df),quote=FALSE)
 	}else{
-	  write.table(pXML_df,file="unphospho_df.txt",sep=",",col.names=colnames(pXML_df),row.names=rownames(pXML_df))
+	  write.table(pXML_df,file="unphospho_df.txt",sep=",",col.names=colnames(pXML_df),row.names=rownames(pXML_df),quote=FALSE)
 	}
 	return(pXML_df)
 }

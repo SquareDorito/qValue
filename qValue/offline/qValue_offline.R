@@ -1,5 +1,5 @@
 parseTextFile = function(){
-  setwd('C:/Users/knoh1/Documents/qValue_ken/offline')
+  setwd('/Users/kennoh/Documents/GitHub/qValue/qValue/offline')
   link_table = read.table('p_to_np.txt',sep='\t',header=TRUE,check.names=FALSE)
   link_df=data.frame(link_table)
   rownames(link_df)<-link_df[,2]
@@ -7,14 +7,14 @@ parseTextFile = function(){
   return(link_df)
 }
 
-create_lf_df = function(p_df,np_df,replicates,timepts,min_rep,label_free,unpaired,silac_num,silac_den,bh,minPA,maxPA,is_min,log_LF,log_silac,is_error){
-  link_df<-parseTextFile()
+create_lf_df = function(p_df,np_df,link_df,replicates,timepts,min_rep,label_free,unpaired,silac_num,silac_den,bh,minPA,maxPA,is_min,log_LF,log_silac,is_error){
   
-  setwd('C:/Users/knoh1/Documents/qValue_ken/offline/labelfree_df')
+  setwd('/Users/kennoh/Documents/GitHub/qValue/qValue/offline/labelfree_df')
   
-  p_num<-ncol(p_df)
+  p_list<-link_df[,2]
+  p_num=length(p_list)
   
-  for(i in 2:p_num){
+  for(i in 1:p_num){
     for (tp in 1:timepts){
       answer <- data.frame()
       id<-character()
@@ -23,19 +23,17 @@ create_lf_df = function(p_df,np_df,replicates,timepts,min_rep,label_free,unpaire
       peakArea<-numeric()
       for (ch in 1:3){
         for (rp in 1:replicates){
-          counter=colnames(p_df)[i]
+          counter=toString(p_list[i])
           tempRN = paste("ch", toString(ch), " rep", toString(rp), " timepoint", toString(tp), sep = "")
+          #cat(paste(tempRN," ",counter,"\n",sep=""))
           if(is.na(p_df[tempRN,counter])){
             next
           }
-          tempID = paste("pep",colnames(p_df)[i],"_rep", toString(rp), sep = "")
+          tempID = paste("pep",counter,"_rep", toString(rp), sep = "")
           channel<-c(channel,ch)
           id<-c(id,tempID)
           np<-c(np,0)
           peakArea<-c(peakArea,p_df[tempRN,counter])
-          if(!any(row.names(link_df) == counter)){
-            next
-          }
           rawNP<-as.character(link_df[counter,3])
           np_list<-as.list(strsplit(rawNP,",")[[1]])
           if(!length(np_list)){
@@ -54,7 +52,7 @@ create_lf_df = function(p_df,np_df,replicates,timepts,min_rep,label_free,unpaire
       }
       if(length(peakArea)!=0){
         answer <- data.frame(id,channel,np,peakArea)
-        outfile=paste("sample",colnames(p_df)[i],"_timepoint",toString(tp),".txt",sep="")
+        outfile=paste("sample",toString(p_list[i]),"_timepoint",toString(tp),".txt",sep="")
         write.table(answer,file=outfile,sep="\t",row.names=FALSE,quote=FALSE)
       }
       rm(answer)
@@ -66,10 +64,9 @@ create_lf_df = function(p_df,np_df,replicates,timepts,min_rep,label_free,unpaire
   }
 }
 
-create_silac_df = function(p_df,np_df,replicates,timepts,min_rep,label_free,unpaired,silac_num,silac_den,bh,minPA,maxPA,is_min,log_LF,log_silac,is_error){
-  link_df<-parseTextFile()
+create_silac_df = function(p_df,np_df,link_df,replicates,timepts,min_rep,label_free,unpaired,silac_num,silac_den,bh,minPA,maxPA,is_min,log_LF,log_silac,is_error){
   
-  setwd('C:/Users/knoh1/Documents/qValue_ken/offline/silac_df')
+  setwd('/Users/kennoh/Documents/GitHub/qValue/qValue/offline/silac_df')
   
   p_num<-ncol(p_df)
   
@@ -129,9 +126,9 @@ create_silac_df = function(p_df,np_df,replicates,timepts,min_rep,label_free,unpa
 
 library(XML)
 ## The following are arguments that must be passed
-p_filePath = "C:\\Users\\knoh1\\Documents\\qValue_ken\\phospho_data.xml"
-np_filePath = "C:\\Users\\knoh1\\Documents\\qValue_ken\\unphospho_data_short.xml"
-waitPath = "C:\\Users\\knoh1\\Documents\\qValue_ken\\wait.txt"
+#p_filePath = "C:\\Users\\knoh1\\Documents\\qValue_ken\\phospho_data.xml"
+#np_filePath = "C:\\Users\\knoh1\\Documents\\qValue_ken\\unphospho_data_short.xml"
+#waitPath = "C:\\Users\\knoh1\\Documents\\qValue_ken\\wait.txt"
 replicates = 5
 timepts = 12
 min_rep = 3
@@ -157,12 +154,13 @@ is_error = FALSE
 ## Note that for arguments without an equals sign each element in the matrix will be the same (ex. arg_mtx = [min, min]).
 
 
-setwd('C:/Users/knoh1/Documents/qValue_ken/offline')
+setwd('/Users/kennoh/Documents/GitHub/qValue/qValue/offline')
 p_df = read.table('phospho_df.txt',sep=',',header=TRUE,check.names=FALSE)
 np_df = read.table('unphospho_df.txt',sep=',',header=TRUE,check.names=FALSE)
+link_df<-parseTextFile()
 
-#if(unpaired==0){
-  create_silac_df(p_df,np_df,replicates,timepts,min_rep,label_free,unpaired,silac_num,silac_den,bh,minPA,maxPA,is_min,log_LF,log_silac,is_error)
-#} else{
-  create_lf_df(p_df,np_df,replicates,timepts,min_rep,label_free,unpaired,silac_num,silac_den,bh,minPA,maxPA,is_min,log_LF,log_silac,is_error)
-#}
+if(unpaired==0){
+  create_silac_df(p_df,np_df,link_df,replicates,timepts,min_rep,label_free,unpaired,silac_num,silac_den,bh,minPA,maxPA,is_min,log_LF,log_silac,is_error)
+} else{
+  create_lf_df(p_df,np_df,link_df,replicates,timepts,min_rep,label_free,unpaired,silac_num,silac_den,bh,minPA,maxPA,is_min,log_LF,log_silac,is_error)
+}
