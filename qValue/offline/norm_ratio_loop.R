@@ -1,18 +1,24 @@
 library(qvalue)
 
-setwd('C:/Users/knoh1/Documents/qValue_ken/offline')
+setwd('/Users/kennoh/Documents/GitHub/qValue/qValue/offline')
 
 timepts=4
 is_silac=0
+BHfdr=1
 
 p_df = read.table('phospho_df.txt',sep=',',header=TRUE,check.names=FALSE)
+link_table = read.table('p_to_np.txt',sep='\t',header=TRUE,check.names=FALSE)
+link_df=data.frame(link_table)
+rownames(link_df)<-link_df[,2]
 
 stats_df<-data.frame()
 fileNames<-character()
 pVals<-numeric()
 qVals<-numeric()
 
-for(i in 2:ncol(p_df)){
+p_list<-link_df[,2]
+
+for(i in 1:length(p_list)){
   for(j in 1:timepts){
     if(is_silac){
       #silac stuff here
@@ -37,8 +43,55 @@ for(i in 2:ncol(p_df)){
   }
 }
 
-qobj<-qvalue(p=pVals)
+if(BHfdr==1){
+  print(paste("Controlling FDR with the Benjamin-Hochberg method.\n",sep=""))
+  qobj<-qvalue(p=pVals,lambda=0)
+}else{
+  qobj<-qvalue(p=pVals)
+}
 qvalues <- qobj$qvalues
+
+if(length(qvalues)==0){
+  qobj <- qvalue(pvals, pi0.method="bootstrap")
+  qvalues <- qobj$qvalues
+}
+
+upper=0.95
+while(length(qvalues)==0){
+  qobj <- qvalue(pvals, lambda=seq(0, " + upper + ", .01))
+  qvalues <- qobj$qvalue
+  upper=upper-0.01
+  if(upper<0.01){
+    break
+  }
+}
+
+lower=0;
+while(length(qvalues)==0){
+  qobj <- qvalue(pvals, lambda=seq(" + lower + ", .99, .01))
+  qvalues<-qobj$qvalues
+  lower=lower+0.01
+  if(lower>0.98){
+    break
+  }
+}
+
+if(length(qvalues)==0){
+  qobj<-qvalue(pvals,lambda=0)
+  qvalues<-qobj$qvalues
+}
+
 qVals<-c(qVals,qvalues)
+
+phist<-"phist.png"
+png(filename=phist)
+hist(pVals,breaks=100)
+dev.off()
+qplot<-"qplot.png"
+png(filename=qplot)
+qplot=plot(qobj)
+dev.off()
+data<-cbind(pVals,qVals)
+
 stats_df <- data.frame(fileNames,pVals,qVals)
 write.table(stats_df,file="master_stats_df.txt",sep="\t",row.names=FALSE,quote=FALSE)
